@@ -54,6 +54,8 @@ void readDistortionCoefficients(Mat &D, const char *filename) {
 	}
 }
 
+
+// @brief Makes the last row 1
 void scale_projection_matrix(Mat &P) {
 	float scale = 1.0;
 	for (int i = 0; i < P.cols; i++) {
@@ -76,6 +78,7 @@ void createMat(Mat &X, vector<Point> &v) {
 
 int is_good_solution(Mat &P, Mat &t) {
 	int is_good = 1;
+             cout<<"No of points: "<<P.cols<<endl;
 	for (int i = 0; i < P.cols; i++) {
 		if (isnan(P.at<double>(2, i)))
 			continue;
@@ -457,6 +460,8 @@ int main() {
 		cout << points_3D_4 << endl;
 	}
 
+            cout<<"Yo! Size: "<<points_3D_1.size()<<endl;
+
 	if (is_good_solution(points_3D_1, t1)) {
 		printf("Selecting solution 1\n");
 		P1 = Mat(P1_1);
@@ -492,6 +497,7 @@ int main() {
 	Rect validRoi[2];
 	Mat R1, R2, t_rectified, P1_rectified, P2_rectified, Q;
 	Size s = left.size();
+             cout<<"Sizes: "<<R.size()<<" and of t: "<<t.size()<<endl;
 	stereoRectify(K, D, K, D, s, R, t, R1, R2, P1_rectified, P2_rectified, Q, CALIB_ZERO_DISPARITY, 1, s, &validRoi[0], &validRoi[1]);
 
 	if (debug) {
@@ -507,7 +513,7 @@ int main() {
 		cout << Q << endl;
 	}
 
-	// Rectify the initial left and right images
+	// // Rectify the initial left and right images
 	if (debug)
 		printf("task: Rectify the initial left and right images");
 	Mat left_undistorted, right_undistorted;
@@ -520,27 +526,30 @@ int main() {
 		imshow("Right Undistorted image", right_undistorted);
 	}
 
-	// Get the disparity map using StereoBM
-	Mat disparity_map;
-	Ptr<StereoBM> sbm = StereoBM::create(16*5, 21);
+            imwrite("left_undistorted.jpg",left_undistorted);
+            imwrite("right_undistorted.jpg",right_undistorted);
 
-	sbm->compute(left_undistorted, right_undistorted, disparity_map);
+	// // Get the disparity map using StereoBM
+	// Mat disparity_map;
+	// Ptr<StereoBM> sbm = StereoBM::create(16*5, 21);
 
-	// Apply Bilateral Filter
-	Mat disparity_map_filtered_, disparity_map_filtered;
-	disparity_map.convertTo(disparity_map_filtered_, CV_8UC1);
-	for (int i = 1; i < 5; i = i + 2) {
-		bilateralFilter(disparity_map_filtered_, disparity_map_filtered, i, i*2, i/2);
-	}
+	// sbm->compute(left_undistorted, right_undistorted, disparity_map);
 
-	if (debug)
-		imshow("Disparity Map", disparity_map_filtered);
+	// // Apply Bilateral Filter
+	// Mat disparity_map_filtered_, disparity_map_filtered;
+	// disparity_map.convertTo(disparity_map_filtered_, CV_8UC1);
+	// for (int i = 1; i < 5; i = i + 2) {
+	// 	bilateralFilter(disparity_map_filtered_, disparity_map_filtered, i, i*2, i/2);
+	// }
 
-	imwrite("disparity_map.jpg", disparity_map_filtered);
-	disparity_map_filtered.convertTo(disparity_map, CV_32F);
-	Mat depth_map;
-	reprojectImageTo3D(disparity_map, depth_map, Q, true);
+	// if (debug)
+	// 	imshow("Disparity Map", disparity_map_filtered);
 
-	waitKey(0);
+	// imwrite("disparity_map.jpg", disparity_map_filtered);
+	// disparity_map_filtered.convertTo(disparity_map, CV_32F);
+	// Mat depth_map;
+	// reprojectImageTo3D(disparity_map, depth_map, Q, true);
+
+	// waitKey(0);
 	return 0;
 }
